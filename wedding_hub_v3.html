@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tiff & Mo — 婚禮文件中心</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#FAF7F2;--warm-white:#FDF9F4;--blush:#E8D5C4;--rose:#C4897A;--deep-rose:#8B4A3F;--sage:#7A8C6E;--charcoal:#2C2825;--mid:#6B6259;--light:#A89E95;--border:rgba(139,74,63,0.15);--border-light:rgba(139,74,63,0.08)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);min-height:100vh;font-size:14px;line-height:1.6}
+.nav{position:sticky;top:0;z-index:100;background:var(--warm-white);border-bottom:1px solid var(--border);padding:0 1rem;display:flex;align-items:center;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;color:var(--rose);white-space:nowrap;margin-right:1rem;padding:1rem 0;flex-shrink:0}
+.nav-tab{padding:1rem 0.75rem;font-size:12px;font-weight:400;color:var(--light);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.2s;flex-shrink:0}
+.nav-tab:hover{color:var(--mid)}
+.nav-tab.active{color:var(--deep-rose);border-bottom-color:var(--rose);font-weight:500}
+.page{display:none;padding:1.5rem 1rem 4rem;max-width:720px;margin:0 auto}
+.page.active{display:block}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--charcoal);margin-bottom:0.25rem}
+.page-sub{font-size:12px;color:var(--light);margin-bottom:1.5rem}
+.sec-title{font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--rose);margin:1.75rem 0 0.75rem;display:flex;align-items:center;gap:0.5rem}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.note-box{background:#FDF3E0;border:1px solid rgba(122,90,16,0.2);border-radius:6px;padding:10px 14px;font-size:12px;color:#5A4010;margin-bottom:1.25rem}
+.task-list{display:flex;flex-direction:column;gap:3px}
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:6px;border:1px solid var(--border-light);background:var(--warm-white);cursor:pointer;transition:background 0.15s}
+.task-item:hover{background:#F5EFE8}
+.task-item.sub{margin-left:18px;border-left:2px solid var(--blush)}
+.task-item.done{opacity:0.4}
+.task-item.done .ti-text{text-decoration:line-through;color:var(--light)}
+.chk{width:15px;height:15px;border-radius:3px;border:1.5px solid var(--blush);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.chk.on{background:var(--sage);border-color:var(--sage)}
+.chk.on::after{content:'';width:8px;height:4px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg);margin-bottom:1px}
+.ti-body{flex:1;min-width:0}
+.ti-text{font-size:13.5px;line-height:1.4;color:var(--charcoal)}
+.ti-when{font-size:11px;color:var(--light);margin-top:2px}
+.ti-meta{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.pill{font-size:10px;font-weight:500;padding:1px 7px;border-radius:20px}
+.p-tiff{background:#EBF2FA;color:#2D5F8A}.p-mo{background:#EDE9FA;color:#4A3A8A}
+.p-mum{background:#E8F5EE;color:#2A6644}.p-jon{background:#FAF0E0;color:#7A4A10}
+.p-hotel{background:#F0EFEB;color:#4A4438}.p-family{background:#FAE8E5;color:#7A2A20}
+.p-makeup{background:#FAE8F2;color:#7A2A50}.p-dl{font-size:10px;font-weight:500;color:var(--deep-rose)}
+.rundown{display:flex;flex-direction:column;gap:3px}
+.rd-row{display:grid;grid-template-columns:80px 1fr;background:var(--warm-white);border:1px solid var(--border-light);border-radius:6px;overflow:hidden}
+.rd-time{padding:10px;font-size:11.5px;font-weight:500;color:var(--mid);background:#F5EFE8;border-right:1px solid var(--border-light);display:flex;align-items:flex-start;line-height:1.4}
+.rd-event{padding:10px 12px}
+.rd-title{font-size:13.5px;color:var(--charcoal);line-height:1.4}
+.rd-note{font-size:11.5px;color:var(--mid);margin-top:3px}
+.rd-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.tag-confirm{font-size:10px;font-weight:500;padding:1px 7px;border-radius:20px;background:#FDF3E0;color:#7A5A10}
+.rd-script{font-size:12px;font-style:italic;color:var(--mid);background:#FAF7F2;border-left:2px solid var(--blush);border-radius:3px;padding:6px 10px;margin-top:6px;line-height:1.6}
+.halal-badge{font-size:10px;font-weight:500;padding:1px 7px;border-radius:20px;background:#FAEAE8;color:var(--deep-rose);display:inline-block;margin-left:4px}
+.role-card{background:var(--warm-white);border:1px solid var(--border-light);border-radius:8px;margin-bottom:10px;overflow:hidden}
+.role-header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#F5EFE8;border-bottom:1px solid var(--border-light)}
+.role-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0}
+.role-name{font-size:14px;font-weight:500;color:var(--charcoal)}
+.role-desc{font-size:11px;color:var(--light)}
+.role-duty{display:flex;gap:10px;padding:7px 14px;border-bottom:1px solid var(--border-light);font-size:13px}
+.role-duty:last-child{border-bottom:none}
+.duty-time{font-size:11px;color:var(--light);white-space:nowrap;min-width:80px;padding-top:1px}
+.itin-day{background:var(--warm-white);border:1px solid var(--border-light);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.itin-day-header{padding:10px 14px;background:#F5EFE8;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px}
+.itin-date{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;color:var(--deep-rose)}
+.itin-title{font-size:13px;font-weight:500;color:var(--charcoal)}
+.itin-items{padding:8px 0}
+.itin-item{display:flex;gap:10px;padding:6px 14px;border-bottom:1px solid var(--border-light);font-size:13px}
+.itin-item:last-child{border-bottom:none}
+.itin-time{font-size:11px;color:var(--light);white-space:nowrap;min-width:70px;padding-top:1px}
+.itin-detail{flex:1}
+.itin-note{font-size:11px;color:var(--mid);margin-top:2px}
+.halal-tag{font-size:10px;font-weight:500;padding:1px 6px;border-radius:20px;background:#FAEAE8;color:var(--deep-rose);margin-left:4px}
+.hotel-tag{font-size:10px;font-weight:500;padding:1px 6px;border-radius:20px;background:#E6F1FB;color:#2D5F8A;margin-left:4px}
+.travel-tag{font-size:10px;font-weight:500;padding:1px 6px;border-radius:20px;background:#FAEEDA;color:#633806;margin-left:4px}
+.done-strip{font-size:12px;color:var(--light);padding:10px 12px;background:var(--warm-white);border:1px solid var(--border-light);border-radius:6px;margin-top:1.5rem}
+.todo-legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;font-size:11px;color:var(--mid);align-items:center}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+.tea-section{margin-bottom:1.5rem}
+.tea-card{background:var(--warm-white);border:1px solid var(--border-light);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.tea-card-header{padding:9px 14px;background:#F5EFE8;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:8px}
+.tea-who{font-size:13px;font-weight:500;color:var(--deep-rose)}
+.tea-role{font-size:11px;color:var(--light);margin-left:4px}
+.tea-lines{padding:8px 0}
+.tea-line{display:flex;align-items:flex-start;gap:10px;padding:6px 14px;border-bottom:1px solid var(--border-light);font-size:13px;line-height:1.5}
+.tea-line:last-child{border-bottom:none}
+.tea-speaker{font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.sp-jon{background:#FAF0E0;color:#7A4A10}
+.sp-couple{background:#EDE9FA;color:#4A3A8A}
+.sp-elder{background:#E8F5EE;color:#2A6644}
+.tea-text{color:var(--charcoal);flex:1}
+.tea-divider{height:1px;background:var(--border);margin:1.5rem 0}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-logo">Tiff & Mo ♡ 7.6.26</div>
+  <div class="nav-tab active" onclick="show('roles',this)">當天分工</div>
+  <div class="nav-tab" onclick="show('family',this)">早上 Rundown</div>
+  <div class="nav-tab" onclick="show('teatime',this)">敬茶參考</div>
+  <div class="nav-tab" onclick="show('rundown',this)">婚禮 Rundown</div>
+  <div class="nav-tab" onclick="show('mc',this)">MC Rundown</div>
+  <div class="nav-tab" onclick="show('personal',this)">個人行程</div>
+  <div class="nav-tab" onclick="show('checklist',this)">待辦清單</div>
+  <div class="nav-tab" onclick="show('mofamily',this)">Mo 家人 HK</div>
+</nav>
+
+<!-- CHECKLIST -->
+<div id="page-checklist" class="page">
+  <div class="page-title">婚禮待辦清單</div>
+  <div class="page-sub">📅 出發香港 5月19日　｜　婚禮 6月7日</div>
+  <div class="sec-title">🟡 香港期間（5月19日 – 6月初）</div>
+  <div class="task-list" id="cl-hk"></div>
+  <div class="sec-title">🔵 婚禮前最後一週（6月1–6日）</div>
+  <div class="task-list" id="cl-final"></div>
+  <div class="sec-title">🌸 婚禮當天（6月7日）</div>
+  <div class="task-list" id="cl-day"></div>
+  <div class="done-strip">✅ 已完成：場地、預算、賓客人數、婚紗、Save the Date、請柬、婚戒、蛋糕、登記手續、花卉</div>
+</div>
+
+<!-- PERSONAL -->
+<div id="page-personal" class="page">
+  <div class="page-title">個人行程 & 待辦</div>
+  <div class="page-sub">20 May – 19 June　｜　Tiff 個人視角</div>
+  <div class="todo-legend">
+    <div style="display:flex;align-items:center;gap:4px"><div class="leg-dot" style="background:#8B4A3F"></div><span>婚禮</span></div>
+    <div style="display:flex;align-items:center;gap:4px"><div class="leg-dot" style="background:#2A6644"></div><span>健康</span></div>
+    <div style="display:flex;align-items:center;gap:4px"><div class="leg-dot" style="background:#7A4A10"></div><span>社交</span></div>
+    <div style="display:flex;align-items:center;gap:4px"><div class="leg-dot" style="background:#4A3A8A"></div><span>個人</span></div>
+  </div>
+  <div id="personal-list"></div>
+</div>
+
+<!-- MO FAMILY HK -->
+<div id="page-mofamily" class="page">
+  <div class="page-title">Mo 家人香港行程</div>
+  <div class="page-sub">6–13 June　｜　Mo 爸媽 + 三兄弟 + Tahmed（6人）　｜　全程 Halal</div>
+  <div class="note-box">✈️ 抵港 6 June 中午　｜　離港 13 June 下午<br>🏨 Harbour Plaza North Point, 665 King's Road, North Point</div>
+  <div id="mofamily-itin"></div>
+</div>
+
+<!-- WEDDING RUNDOWN -->
+<div id="page-rundown" class="page">
+  <div class="page-title">婚禮 Rundown</div>
+  <div class="page-sub">12:00–15:00　｜　已確認最終版本</div>
+  <div class="note-box">✅ 已確認最終版本。</div>
+  <div class="sec-title">接待</div>
+  <div class="rundown">
+    <div class="rd-row"><div class="rd-time">12:00</div><div class="rd-event"><div class="rd-title">接待廳開放，賓客陸續抵達</div><div class="rd-note">迎賓飲品、輕鬆背景音樂</div></div></div>
+    <div class="rd-row"><div class="rd-time">12:25</div><div class="rd-event"><div class="rd-title">賓客移入宴會廳就坐</div></div></div>
+  </div>
+  <div class="sec-title">儀式開始</div>
+  <div class="rundown">
+    <div class="rd-row"><div class="rd-time">12:30</div><div class="rd-event"><div class="rd-title">Jon 宣布婚宴正式開始</div></div></div>
+    <div class="rd-row"><div class="rd-time">12:32</div><div class="rd-event"><div class="rd-title">新人入場（從場外步入，掌聲＋入場曲）</div><div class="rd-note">✅ 酒店已確認</div></div></div>
+    <div class="rd-row"><div class="rd-time">12:35</div><div class="rd-event"><div class="rd-title">Jon 簡短開場歡迎</div></div></div>
+    <div class="rd-row"><div class="rd-time">12:38</div><div class="rd-event"><div class="rd-title">Tiff 致辭（中英文）</div></div></div>
+    <div class="rd-row"><div class="rd-time">~12:43</div><div class="rd-event"><div class="rd-title">Mo 致辭（英文）</div></div></div>
+    <div class="rd-row"><div class="rd-time">~12:48</div><div class="rd-event"><div class="rd-title">爸爸短講</div></div></div>
+    <div class="rd-row"><div class="rd-time">~12:52</div><div class="rd-event"><div class="rd-title">新人乾杯（非酒精飲品）</div><div class="rd-note">所有致辭後一同舉杯</div></div></div>
+  </div>
+  <div class="sec-title">切蛋糕及遊桌</div>
+  <div class="rundown">
+    <div class="rd-row"><div class="rd-time">~12:55</div><div class="rd-event"><div class="rd-title">切蛋糕＋拍照</div><div class="rd-note">Jon 宣布，賓客圍觀。酒店同步開始準備 Buffet。</div></div></div>
+    <div class="rd-row"><div class="rd-time">~13:05</div><div class="rd-event"><div class="rd-title">Buffet 正式開放</div><div class="rd-note">Halal 角落設於第一主桌旁　✅ 酒店已確認</div></div></div>
+    <div class="rd-row"><div class="rd-time">~13:05</div><div class="rd-event"><div class="rd-title">新人、爸爸及媽媽遊桌敬酒（每桌，約 20 分鐘）</div><div class="rd-note">新人飲非酒精飲品，與 Buffet 同步進行</div></div></div>
+  </div>
+  <div class="sec-title">團體合照</div>
+  <div class="rundown">
+    <div class="rd-row"><div class="rd-time">14:00</div><div class="rd-event"><div class="rd-title">團體合照</div><div class="rd-note">Jon 按順序宣布各群組於背景板前　✅ Tiff 已確認群組名稱及順序</div></div></div>
+  </div>
+  <div class="sec-title">宴會尾聲</div>
+  <div class="rundown">
+    <div class="rd-row"><div class="rd-time">14:50</div><div class="rd-event"><div class="rd-title">Jon 宣布宴會即將結束，感謝致辭</div></div></div>
+    <div class="rd-row"><div class="rd-time">15:00</div><div class="rd-event"><div class="rd-title">宴會結束，賓客離場</div></div></div>
+  </div>
+</div>
+
+<!-- FAMILY RUNDOWN -->
+<div id="page-family" class="page">
+  <div class="page-title">早上 Rundown</div>
+  <div class="page-sub">7:30am – 12:30pm　｜　含敬茶環節　｜　婚禮詳情見「婚禮 Rundown」</div>
+  <div class="note-box">✅ 已確認最終版本。</div>
+  <div class="sec-title">化妝及準備（酒店房間）</div>
+  <div class="rundown">
+    <div class="rd-row"><div class="rd-time">前一晚</div><div class="rd-event"><div class="rd-title">Tiff 及 Mo 住宿酒店（婚禮前夕）</div></div></div>
+    <div class="rd-row"><div class="rd-time">7:30</div><div class="rd-event"><div class="rd-title">化妝師 Ling 抵達酒店房間，開始中式造型</div></div></div>
+    <div class="rd-row"><div class="rd-time">8:30</div><div class="rd-event"><div class="rd-title">媽媽帶婆婆及 Jon 抵達酒店</div><div class="rd-note">媽媽開始化妝</div></div></div>
+    <div class="rd-row"><div class="rd-time">9:15</div><div class="rd-event"><div class="rd-title">爸爸接嫲嫲出發</div></div></div>
+    <div class="rd-row"><div class="rd-time">~9:45</div><div class="rd-event"><div class="rd-title">爸爸及嫲嫲抵達酒店（10am 前）</div></div></div>
+  </div>
+  <div class="sec-title">攝影及敬茶準備</div>
+  <div class="rundown">
+    <div class="rd-row"><div class="rd-time">10:00</div><div class="rd-event"><div class="rd-title">攝影師抵達酒店房間，開始拍照</div><div class="rd-note">新人、父母、嫲嫲、婆婆合照</div></div></div>
+  </div>
+  <div class="sec-title">敬茶環節（酒店房間）</div>
+  <div class="rundown">
+    <div class="rd-row"><div class="rd-time">10:15</div><div class="rd-event"><div class="rd-title">第一輪敬茶：嫲嫲、婆婆、爸爸、媽媽</div><div class="rd-tags"><span class="tag-confirm">待確認：稱謂及說話內容</span><span class="tag-confirm">待確認：長輩回禮安排</span><span class="tag-confirm">待確認：茶壺茶杯套裝（酒店提供）</span></div></div></div>
+    <div class="rd-row"><div class="rd-time">10:30</div><div class="rd-event"><div class="rd-title">媽媽的妹妹們及表親抵達，第二輪敬茶開始</div></div></div>
+    <div class="rd-row"><div class="rd-time">10:45</div><div class="rd-event"><div class="rd-title">爸爸的妹妹、妹夫及弟弟抵達，第三輪敬茶開始</div></div></div>
+    <div class="rd-row"><div class="rd-time">11:00</div><div class="rd-event"><div class="rd-title">所有敬茶環節完成</div></div></div>
+  </div>
+  <div class="sec-title">換裝及最後準備</div>
+  <div class="rundown">
+    <div class="rd-row"><div class="rd-time">11:00</div><div class="rd-event"><div class="rd-title">Tiff 換西式婚紗，Ling 調整髮型及妝容</div></div></div>
+    <div class="rd-row"><div class="rd-time">11:30–12:00</div><div class="rd-event"><div class="rd-title">最後造型確認，房間內拍照留念</div></div></div>
+    <div class="rd-row"><div class="rd-time">11:00</div><div class="rd-event"><div class="rd-title">長輩及家人移往宴會廳接待區等候</div></div></div>
+    <div class="rd-row"><div class="rd-time">12:15</div><div class="rd-event"><div class="rd-title">Tiff 及 Mo 就緒，移至場外等候入場 ✓</div><div class="rd-note">宴會 12:30 開始，15:00 結束</div></div></div>
+    <div class="rd-row"><div class="rd-time">12:30</div><div class="rd-event"><div class="rd-title">婚宴正式開始 → 接婚禮 Rundown</div></div></div>
+  </div>
+</div>
+
+<!-- MC RUNDOWN -->
+<div id="page-mc" class="page">
+  <div class="page-title">MC Rundown</div>
+  <div class="page-sub">Jon 專用　｜　婚宴版　｜　敬茶說話詳見「敬茶參考」分頁</div>
+  <div class="sec-title">婚宴 MC（12:30–15:00）</div>
+  <div class="rundown">
+    <div class="rd-row"><div class="rd-time">12:25</div><div class="rd-event"><div class="rd-title">引導賓客入座</div></div></div>
+    <div class="rd-row"><div class="rd-time">12:30</div><div class="rd-event"><div class="rd-title">宣布婚宴開始</div><div class="rd-script">「各位來賓，婚宴現在正式開始，請大家以熱烈掌聲歡迎一對新人入場！」</div></div></div>
+    <div class="rd-row"><div class="rd-time">12:32</div><div class="rd-event"><div class="rd-title">新人步入，播入場曲</div></div></div>
+    <div class="rd-row"><div class="rd-time">12:35</div><div class="rd-event"><div class="rd-title">簡短開場歡迎</div><div class="rd-script">「歡迎各位親友蒞臨 Tiff 同 Mo 嘅婚宴，多謝大家百忙中抽空出席。」</div></div></div>
+    <div class="rd-row"><div class="rd-time">12:38</div><div class="rd-event"><div class="rd-title">邀請 Tiff 致辭</div><div class="rd-script">「首先，有請新娘子 Tiff 跟大家說幾句。」</div></div></div>
+    <div class="rd-row"><div class="rd-time">~12:43</div><div class="rd-event"><div class="rd-title">邀請 Mo 致辭</div><div class="rd-script">「多謝 Tiff。Now, please welcome the groom, Mo.」</div></div></div>
+    <div class="rd-row"><div class="rd-time">~12:48</div><div class="rd-event"><div class="rd-title">邀請爸爸短講</div><div class="rd-script">「有請新娘的爸爸跟大家說幾句。」</div></div></div>
+    <div class="rd-row"><div class="rd-time">~12:52</div><div class="rd-event"><div class="rd-title">新人乾杯</div><div class="rd-script">「現在請大家舉起杯子，為一對新人送上最真誠的祝福——乾杯！Cheers!」</div></div></div>
+    <div class="rd-row"><div class="rd-time">~12:55</div><div class="rd-event"><div class="rd-title">宣布切蛋糕＋拍照</div><div class="rd-script">「現在有請一對新人進行切蛋糕環節，請大家拿起相機！」</div><div class="rd-note">酒店同步開始準備 Buffet</div></div></div>
+    <div class="rd-row"><div class="rd-time">~13:05</div><div class="rd-event"><div class="rd-title">宣布 Buffet 開放 + 新人遊桌</div><div class="rd-script">「Buffet 現在正式開放，請大家慢慢享用。一對新人將逐桌向各位敬酒，多謝大家今日嘅到來。」</div></div></div>
+    <div class="rd-row"><div class="rd-time">14:00</div><div class="rd-event"><div class="rd-title">宣布團體合照開始</div><div class="rd-script">「各位來賓，現在進行團體合照環節，請大家配合。我點到名的朋友請到背景板前集合。」</div></div></div>
+    <div class="rd-row"><div class="rd-time">14:00</div><div class="rd-event"><div class="rd-title">Group 1 — 新人 + 雙方父母</div><div class="rd-script">「有請新人同雙方爸爸媽媽。」</div></div></div>
+    <div class="rd-row"><div class="rd-time"></div><div class="rd-event"><div class="rd-title">Group 2 — 新人 + 雙方父母 + 嫲嫲 + 婆婆</div><div class="rd-script">「有請嫲嫲同婆婆加入。」</div></div></div>
+    <div class="rd-row"><div class="rd-time"></div><div class="rd-event"><div class="rd-title">Group 3 — 新人 + 雙方全家</div><div class="rd-script">「有請雙方所有家庭成員一齊嚟。」</div></div></div>
+    <div class="rd-row"><div class="rd-time"></div><div class="rd-event"><div class="rd-title">Group 4 — 新人 + Mo 家人</div><div class="rd-script">「有請 Mo 嘅家人同新人合照。」</div></div></div>
+    <div class="rd-row"><div class="rd-time"></div><div class="rd-event"><div class="rd-title">Group 5 — 新人 + Tiff 家人</div><div class="rd-script">「有請 Tiff 嘅家人同新人合照。」</div></div></div>
+    <div class="rd-row"><div class="rd-time"></div><div class="rd-event"><div class="rd-title">Jon 宣布個人合照時間稍後另行安排</div><div class="rd-script">「多謝各位家庭成員！家人個別合照稍後另行安排，請留意。」</div></div></div>
+    <div class="rd-row"><div class="rd-time"></div><div class="rd-event"><div class="rd-title">Group 6 — 新人 + Hannah & Wing Lam</div><div class="rd-script">「有請 Hannah 同 Wing Lam 同新人合照。」</div></div></div>
+    <div class="rd-row"><div class="rd-time"></div><div class="rd-event"><div class="rd-title">Group 7 — 新人 + Polly</div><div class="rd-script">「有請 Polly 同新人合照。」</div></div></div>
+    <div class="rd-row"><div class="rd-time"></div><div class="rd-event"><div class="rd-title">Group 8 — 新人 + River、Ah Che、Irene、Spencer</div><div class="rd-script">「有請 River、Ah Che、Irene 同 Spencer 同新人合照。」</div></div></div>
+    <div class="rd-row"><div class="rd-time"></div><div class="rd-event"><div class="rd-title">Group 9 — 新人 + Tiff 爸爸摯友</div><div class="rd-script">「有請史貽安、黃育德、練顯輝伉儷、黃文華伉儷、Kenneth Ku、Ken Chan、Brian Chow 同新人合照。」</div></div></div>
+    <div class="rd-row"><div class="rd-time"></div><div class="rd-event"><div class="rd-title">Group 10 — 新人 + Toppan 朋友</div><div class="rd-script">「有請 Toppan 嘅朋友同新人合照。」</div></div></div>
+    <div class="rd-row"><div class="rd-time"></div><div class="rd-event"><div class="rd-title">Group 11 — 新人 + Emphasis 朋友</div><div class="rd-script">「有請 Emphasis 嘅朋友同新人合照。」</div></div></div>
+    <div class="rd-row"><div class="rd-time"></div><div class="rd-event"><div class="rd-title">Group 12 — 新人 + Prestige 朋友</div><div class="rd-script">「有請 Prestige 嘅朋友同新人合照。」</div></div></div>
+    <div class="rd-row"><div class="rd-time"></div><div class="rd-event"><div class="rd-title">Group 13 — 新人 + OM [桌號待填]</div><div class="rd-script">「有請 OM ___枱嘅朋友同新人合照。」</div><div class="rd-tags"><span class="tag-confirm">Jon 填入桌號</span></div></div></div>
+    <div class="rd-row"><div class="rd-time"></div><div class="rd-event"><div class="rd-title">Group 14 — 新人 + OM [桌號待填]</div><div class="rd-script">「有請 OM ___枱嘅朋友同新人合照。」</div><div class="rd-tags"><span class="tag-confirm">Jon 填入桌號</span></div></div></div>
+    <div class="rd-row"><div class="rd-time">14:50</div><div class="rd-event"><div class="rd-title">感謝致辭 + 環保打包宣布</div><div class="rd-script">「各位來賓，今日的婚宴即將到尾聲。再次多謝大家的到來，你們的祝福對 Tiff 同 Mo 嚟講意義重大。酒店已為大家準備好打包袋，入面有酒同食物，歡迎大家帶走，一齊分享今日嘅喜悅，同時響應環保、減少浪費。祝大家旅途平安。Thank you all for being here today.」</div></div></div>
+    <div class="rd-row"><div class="rd-time">15:00</div><div class="rd-event"><div class="rd-title">宴會結束</div></div></div>
+  </div>
+</div>
+
+<!-- ROLES -->
+<div id="page-roles" class="page active">
+  <div class="page-title">當天分工表</div>
+  <div class="page-sub">核心團隊職責　｜　6月7日</div>
+
+  <div class="role-card">
+    <div class="role-header"><div class="role-avatar" style="background:#FAEAE8;color:#8B4A3F">Tiff</div><div><div class="role-name">Tiff（新娘）</div><div class="role-desc">主角</div></div></div>
+    <div class="role-duty"><div class="duty-time">7:30</div><div>化妝師 Ling 到達，確認當天造型流程</div></div>
+    <div class="role-duty"><div class="duty-time">早上</div><div>確認花束已準備好</div></div>
+    <div class="role-duty"><div class="duty-time">早上</div><div>確認婚禮行李箱及緊急小包在身</div></div>
+    <div class="role-duty"><div class="duty-time">早上</div><div>聯絡 Hannah 及 Wing 確認當天到場時間</div></div>
+    <div class="role-duty"><div class="duty-time">早上</div><div>派利是給 Hannah 及 Wing</div></div>
+    <div class="role-duty"><div class="duty-time">10:15–11:00</div><div>敬茶環節（三輪）</div></div>
+    <div class="role-duty"><div class="duty-time">11:00</div><div>換西式婚紗，化妝師調整造型</div></div>
+    <div class="role-duty"><div class="duty-time">12:15</div><div>就緒，與 Mo 移至場外等候入場</div></div>
+    <div class="role-duty"><div class="duty-time">~13:05</div><div>與 Mo、爸爸、媽媽遊桌敬酒（每桌）</div></div>
+  </div>
+
+  <div class="role-card">
+    <div class="role-header"><div class="role-avatar" style="background:#EDE9FA;color:#4A3A8A">Mo</div><div><div class="role-name">Mo（新郎）</div><div class="role-desc">新郎 ／ 酒店備用聯絡 ／ 戒指保管人</div></div></div>
+    <div class="role-duty"><div class="duty-time">早上</div><div>Brief 攝影師 Sunny（婚禮當天，技術細節及要求）</div></div>
+    <div class="role-duty"><div class="duty-time">早上</div><div>Brief Tahmed：10am 到（如拍早上）或 12:15 到（如只拍午宴）</div></div>
+    <div class="role-duty"><div class="duty-time">10:15–11:00</div><div>敬茶環節（三輪）</div></div>
+    <div class="role-duty"><div class="duty-time">12:15 前</div><div>婚戒保管——確認戒指在身，儀式前備好</div></div>
+    <div class="role-duty"><div class="duty-time">12:15</div><div>與 Tiff 就緒，移至場外等候入場</div></div>
+    <div class="role-duty"><div class="duty-time">~13:05</div><div>與 Tiff、爸爸、媽媽遊桌敬酒（每桌）</div></div>
+    <div class="role-duty"><div class="duty-time">全天</div><div>如媽媽不在場，負責與酒店協調</div></div>
+    <div class="role-duty"><div class="duty-time">15:00 後</div><div>協助收拾個人物品</div></div>
+  </div>
+
+  <div class="role-card">
+    <div class="role-header"><div class="role-avatar" style="background:#FAF0E0;color:#7A4A10">Jon</div><div><div class="role-name">Jon</div><div class="role-desc">MC</div></div></div>
+    <div class="role-duty"><div class="duty-time">8:30</div><div>抵達酒店，陪同媽媽及婆婆</div></div>
+    <div class="role-duty"><div class="duty-time">10:15–11:00</div><div>主持敬茶環節三輪（見敬茶參考頁）</div></div>
+    <div class="role-duty"><div class="duty-time">11:00</div><div>通知家人前往 buffet hall 等候</div></div>
+    <div class="role-duty"><div class="duty-time">12:00</div><div>在接待廳協助迎接賓客</div></div>
+    <div class="role-duty"><div class="duty-time">12:30–15:00</div><div>婚宴全程主持（見 MC Rundown）</div></div>
+    <div class="role-duty"><div class="duty-time">全程</div><div>午宴流程管理，確保各環節按時序進行</div></div>
+    <div class="role-duty"><div class="duty-time">15:00 後</div><div>協助收拾個人物品</div></div>
+  </div>
+
+  <div class="role-card">
+    <div class="role-header"><div class="role-avatar" style="background:#FAE8E5;color:#7A2A20">爸爸</div><div><div class="role-name">爸爸</div><div class="role-desc">照顧嫲嫲婆婆</div></div></div>
+    <div class="role-duty"><div class="duty-time">9:15</div><div>接嫲嫲出發，10:00 前抵達酒店</div></div>
+    <div class="role-duty"><div class="duty-time">早上</div><div>協調各方家人到場時間及接待（媽媽一方、爸爸一方、Mo 家人）</div></div>
+    <div class="role-duty"><div class="duty-time">10:15–11:00</div><div>出席敬茶環節</div></div>
+    <div class="role-duty"><div class="duty-time">全天</div><div>接送、攙扶及陪伴嫲嫲婆婆</div></div>
+    <div class="role-duty"><div class="duty-time">11:00</div><div>陪同嫲嫲婆婆移往宴會廳接待區</div></div>
+    <div class="role-duty"><div class="duty-time">~13:05</div><div>與新人遊桌敬酒（每桌）</div></div>
+  </div>
+
+  <div class="role-card">
+    <div class="role-header"><div class="role-avatar" style="background:#E8F5EE;color:#2A6644">媽媽</div><div><div class="role-name">媽媽</div><div class="role-desc">總協調 ／ 禮金收取</div></div></div>
+    <div class="role-duty"><div class="duty-time">8:30</div><div>帶婆婆及 Jon 抵達酒店，開始化妝</div></div>
+    <div class="role-duty"><div class="duty-time">10:15–11:00</div><div>出席敬茶環節</div></div>
+    <div class="role-duty"><div class="duty-time">11:00</div><div>陪同家人前往 buffet hall 等候</div></div>
+    <div class="role-duty"><div class="duty-time">全天</div><div>與酒店當天對接，處理突發事宜</div></div>
+    <div class="role-duty"><div class="duty-time">全天</div><div>Tiff 首飾妥善保管</div></div>
+    <div class="role-duty"><div class="duty-time">~13:05</div><div>與新人遊桌敬酒（每桌）</div></div>
+    <div class="role-duty"><div class="duty-time">12:00 起</div><div>負責收取禮金及禮物，妥善保管</div></div>
+    <div class="role-duty"><div class="duty-time">15:00 後</div><div>確保禮金、禮物及個人物品全部帶走</div></div>
+  </div>
+
+  <div class="role-card">
+    <div class="role-header"><div class="role-avatar" style="background:#F0EFEB;color:#4A4438">Han</div><div><div class="role-name">Hannah & Wing Lam</div><div class="role-desc">接待廳迎賓</div></div></div>
+    <div class="role-duty"><div class="duty-time">12:00–12:25</div><div>在接待廳迎接賓客，引導就坐</div></div>
+    <div class="role-duty"><div class="duty-time">12:25 後</div><div>回自己座位</div></div>
+  </div>
+
+  <div class="role-card">
+    <div class="role-header"><div class="role-avatar" style="background:#EDE9FA;color:#4A3A8A">Tah</div><div><div class="role-name">Tahmed</div><div class="role-desc">非官方攝影</div></div></div>
+    <div class="role-duty"><div class="duty-time">10:00 或 12:15</div><div>到達時間由 Mo brief 確認（早上拍攝 10:00 / 只拍午宴 12:15）</div></div>
+    <div class="role-duty"><div class="duty-time">全程</div><div>用自己相機拍攝婚禮全程</div></div>
+    <div class="role-duty"><div class="duty-time">結束後</div><div>與新人分享相片</div></div>
+  </div>
+
+</div>
+
+<!-- TEA CEREMONY REFERENCE -->
+<div id="page-teatime" class="page">
+  <div class="page-title">敬茶參考</div>
+  <div class="page-sub">7 June 早上　｜　Jon、新人及長輩參考用　｜　全粵語</div>
+  <div class="note-box">📋 此頁供 Jon 帶氣氛、新人奉茶及長輩回應參考。MC Rundown 另頁。<br>🔴 = Jon 說　🔵 = 新人說　🟢 = 長輩說</div>
+
+  <div class="sec-title">第一輪（10:15）— 婆婆、父母</div>
+
+  <div class="tea-card">
+    <div class="tea-card-header"><div class="tea-who">嫲嫲</div><div class="tea-role">爸爸婆婆</div></div>
+    <div class="tea-lines">
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">有請 Tiff 同 Mo 向嫲嫲奉茶。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-couple">新人</span><div class="tea-text">嫲嫲，請飲茶。茶到口，富貴榮華一齊有。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-elder">嫲嫲</span><div class="tea-text">飲過乖女茶，發到笑 kaka。飲過乖女茶，一世有「揸拿」。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">嫲嫲飲過茶，出年抱曾孫㗎喇！</div></div>
+    </div>
+  </div>
+
+  <div class="tea-card">
+    <div class="tea-card-header"><div class="tea-who">婆婆</div><div class="tea-role">媽媽婆婆</div></div>
+    <div class="tea-lines">
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">有請 Tiff 同 Mo 向婆婆奉茶。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-couple">新人</span><div class="tea-text">婆婆，請飲茶。茶到口，出年又飲滿月酒。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-elder">婆婆</span><div class="tea-text">飲過新人茶，子孫聽晒話。飲過新人茶，對眼唔會矇查查。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">婆婆飲過茶，笑到合唔埋口㗎喇！</div></div>
+    </div>
+  </div>
+
+  <div class="tea-card">
+    <div class="tea-card-header"><div class="tea-who">爸爸 & Mum</div><div class="tea-role">Tiff 父母（Mo 叫 Dad & Mum）</div></div>
+    <div class="tea-lines">
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">有請 Tiff 同 Mo 向爸爸媽媽奉茶。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-couple">新人</span><div class="tea-text">爸爸，請飲茶。Mum，請飲茶。杯茶甜甜地，買樓買到跑馬地。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-elder">爸爸媽媽</span><div class="tea-text">飲過女婿茶，富貴又榮華。飲過女婿茶，子孫聽晒話。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">飲過�囡囡嘅茶，笑到 kaka，恭喜恭喜！</div></div>
+    </div>
+  </div>
+
+  <div class="sec-title">第二輪（10:30）— 媽媽的妹妹及表親</div>
+
+  <div class="tea-card">
+    <div class="tea-card-header"><div class="tea-who">2姨</div></div>
+    <div class="tea-lines">
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">有請 Tiff 同 Mo 向 2姨 奉茶。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-couple">新人</span><div class="tea-text">2姨，請飲茶。茶到口，越來越正斗。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-elder">2姨</span><div class="tea-text">斟茶俾姨媽，出年幫手抱蘇蝦。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">2姨飲過茶，出年見到靚寶寶囉！</div></div>
+    </div>
+  </div>
+
+  <div class="tea-card">
+    <div class="tea-card-header"><div class="tea-who">3姨</div></div>
+    <div class="tea-lines">
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">有請 Tiff 同 Mo 向 3姨 奉茶。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-couple">新人</span><div class="tea-text">3姨，請飲茶。茶到口，橫財又就手。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-elder">3姨</span><div class="tea-text">斟茶俾姨媽，出年幫手抱蘇蝦。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">3姨飲過茶，笑到合唔埋口！</div></div>
+    </div>
+  </div>
+
+  <div class="tea-card">
+    <div class="tea-card-header"><div class="tea-who">媽媽表親</div><div class="tea-role">媽媽的表兄弟夫婦</div></div>
+    <div class="tea-lines">
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">有請 Tiff 同 Mo 向各位長輩奉茶。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-couple">新人</span><div class="tea-text">請飲茶。飲茶飲到尾，一對新人錫晒你。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-elder">長輩</span><div class="tea-text">飲過新人茶，子孫聽晒話。</div></div>
+    </div>
+  </div>
+
+  <div class="sec-title">第三輪（10:45）— 爸爸的妹妹、妹夫及弟弟</div>
+
+  <div class="tea-card">
+    <div class="tea-card-header"><div class="tea-who">姑姐 & 姑丈</div></div>
+    <div class="tea-lines">
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">有請 Tiff 同 Mo 向姑姐同姑丈奉茶。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-couple">新人</span><div class="tea-text">姑姐，請飲茶。姑丈，請飲茶。茶到口，買車又買樓。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-elder">姑姐</span><div class="tea-text">斟茶俾姑姐，姑姐年年換新車。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">姑姐姑丈飲過茶，恭喜恭喜，笑到 kaka！</div></div>
+    </div>
+  </div>
+
+  <div class="tea-card">
+    <div class="tea-card-header"><div class="tea-who">2叔</div></div>
+    <div class="tea-lines">
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">有請 Tiff 同 Mo 向 2叔 奉茶。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-couple">新人</span><div class="tea-text">2叔，請飲茶。茶到口，得心又應手。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-elder">2叔</span><div class="tea-text">斟茶俾叔叔，等佢年年換大屋。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">2叔飲過茶，笑到停唔到！</div></div>
+    </div>
+  </div>
+
+  <div class="tea-card">
+    <div class="tea-card-header"><div class="tea-who">11:00</div><div class="tea-role">敬茶完畢</div></div>
+    <div class="tea-lines">
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">「敬茶環節完成，多謝各位長輩的祝福。祝 Tiff 同 Mo 百年好合，白頭偕老！」</div></div>
+    </div>
+  </div>
+
+  <div class="tea-divider"></div>
+
+  <div class="sec-title">戴金器吉利說話</div>
+  <div class="tea-card">
+    <div class="tea-card-header"><div class="tea-who">戴金器時（任何長輩）</div></div>
+    <div class="tea-lines">
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">戴起戴起，風生水起！</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">戴起戴起，兒孫滿地！</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">戴過龍鳳鈪，等你快啲買豪宅！</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-jon">Jon</span><div class="tea-text">戴過金戒指，生個金童子！</div></div>
+    </div>
+  </div>
+
+  <div class="sec-title">新人奉茶通用吉利說話（備用）</div>
+  <div class="tea-card">
+    <div class="tea-card-header"><div class="tea-who">新人奉茶時可選用</div></div>
+    <div class="tea-lines">
+      <div class="tea-line"><span class="tea-speaker sp-couple">新人</span><div class="tea-text">茶到口，財神走到大門口。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-couple">新人</span><div class="tea-text">茶到口，買車又買樓。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-couple">新人</span><div class="tea-text">飲深啲，賺多啲，中完孖寶中三T。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-couple">新人</span><div class="tea-text">一啖飲到尾，年頭賺到落年尾。</div></div>
+      <div class="tea-line"><span class="tea-speaker sp-couple">新人</span><div class="tea-text">Sweet tea in mouth, buy a big house!</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function show(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+const KEY='wedding_hub_v3';
+let C={};
+try{C=JSON.parse(localStorage.getItem(KEY))||{};}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(C));}catch(e){}}
+
+const OL={tiff:'Tiff',mo:'Mo',mum:'媽媽',jon:'Jon',hotel:'酒店',family:'家人',makeup:'化妝師'};
+
+function mkTask(t,pfx){
+  const id=pfx+'_'+t.id;
+  const done=!!C[id];
+  const d=document.createElement('div');
+  d.className='task-item'+(t.sub?' sub':'')+(done?' done':'');
+  const pills=(t.o||[]).map(o=>`<span class="pill p-${o}">${OL[o]||o}</span>`).join('');
+  const dl=t.dl?`<span class="p-dl">${t.dl}</span>`:'';
+  d.innerHTML=`<div class="chk${done?' on':''}"></div><div class="ti-body"><div class="ti-text">${t.t}</div>${t.w?`<div class="ti-when">${t.w}</div>`:''}${pills||dl?`<div class="ti-meta">${pills}${dl}</div>`:''}</div>`;
+  d.addEventListener('click',()=>{C[id]=!C[id];save();d.classList.toggle('done');d.querySelector('.chk').classList.toggle('on');});
+  return d;
+}
+
+const CL=[
+  {id:1,g:'hk',t:'確認攝影師——與家人商討後決定找或不找',o:['tiff','family'],w:'17 May',dl:'17 May'},
+  {id:2,g:'hk',t:'與家人討論座位表初稿',o:['tiff','mum','family'],w:'17 May'},
+  {id:3,g:'hk',t:'確認核心團隊名單及當天各人分工',o:['tiff'],w:'17 May'},
+  {id:4,g:'hk',t:'確認花卉是否自行購買及大約購買日期',o:['tiff','family'],w:'17 May'},
+  {id:5,g:'hk',t:'媽媽與酒店預約 rundown 確認會議',o:['mum','hotel'],w:'17 May'},
+  {id:6,g:'hk',t:'媽媽與喜餅供應商確認訂單數量、包裝及送達地點',o:['mum'],w:'17 May'},
+  {id:7,g:'hk',t:'通知 Hannah 接待廳迎賓職責',o:['tiff'],w:'21 May 晚餐時'},
+  {id:8,g:'hk',t:'通知 Tahmed 拍攝職責及期望',o:['tiff'],w:'沖繩期間'},
+  {id:9,g:'hk',t:'確認爸爸及姨媽照顧婆婆安排',o:['tiff','family'],w:'17 May'},
+  {id:10,g:'hk',t:'收集 baby photo（Tiff & Mo）',o:['tiff','mo'],w:'16–17 May'},
+  {id:11,g:'hk',t:'在家自行試穿婚紗，確認身形',o:['tiff'],w:'21 May'},
+  {id:12,g:'hk',t:'化妝試妝——確認早上化妝 rundown 時序',o:['tiff','makeup'],w:'28 May 1pm',dl:'28 May'},
+  {id:13,g:'hk',sub:1,t:'↳ 確認化妝師到達時間',o:['tiff','makeup']},
+  {id:14,g:'hk',sub:1,t:'↳ 確認中式造型所需時間',o:['tiff','makeup']},
+  {id:15,g:'hk',sub:1,t:'↳ 確認換西式婚紗造型所需時間',o:['tiff','makeup']},
+  {id:17,g:'hk',t:'向酒店提交歌曲清單',o:['tiff','mo','hotel'],w:'31 May 前',dl:'31 May'},
+  {id:18,g:'hk',t:'取旗袍 / 中式婚服',o:['tiff'],w:'29 May 或 1 June'},
+  {id:19,g:'hk',t:'與酒店開 rundown 確認會議',o:['tiff','mum','hotel'],w:'29 May 或 1–4 June'},
+  {id:20,g:'hk',sub:1,t:'↳ 審閱並確認酒店婚禮 rundown',o:['tiff','hotel']},
+  {id:21,g:'hk',sub:1,t:'↳ 確認 floor plan',o:['tiff','hotel']},
+  {id:22,g:'hk',sub:1,t:'↳ 提交並確認座位表',o:['tiff','mum','hotel']},
+  {id:23,g:'hk',sub:1,t:'↳ 確認禮品存放位置',o:['tiff','hotel']},
+  {id:24,g:'hk',sub:1,t:'↳ 確認接待區擺設安排',o:['tiff','hotel']},
+  {id:25,g:'hk',sub:1,t:'↳ 提交 baby photo 並確認展示方式',o:['tiff','hotel']},
+  {id:26,g:'hk',sub:1,t:'↳ 確認 Halal 角落位置（第一主桌旁）✅',o:['tiff','hotel']},
+  {id:27,g:'hk',sub:1,t:'↳ 確認非酒精飲品安排',o:['tiff','hotel']},
+  {id:28,g:'hk',sub:1,t:'↳ 確認迎賓飲品安排',o:['tiff','hotel']},
+  {id:29,g:'hk',sub:1,t:'↳ 確認團體合照所需時間及背景板位置 ✅',o:['tiff','hotel']},
+  {id:60,g:'hk',sub:1,t:'↳ 確認 guestbook 或簽名區安排',o:['tiff','hotel']},
+  {id:61,g:'hk',sub:1,t:'↳ 確認停車場方向及時間限制（賓客用）',o:['tiff','hotel']},
+  {id:62,g:'hk',sub:1,t:'↳ 確認早上敬茶用茶壺茶杯套裝——酒店是否提供及幾時送到房間',o:['tiff','hotel']},
+  {id:63,g:'hk',sub:1,t:'↳ 確認兩張主桌能否各坐 13 人',o:['tiff','hotel']},
+  {id:30,g:'hk',t:'與 Jon 確認 MC rundown 並交書面版本',o:['tiff','jon'],w:'酒店 rundown 確認後'},
+  {id:31,g:'hk',t:'草擬早上 rundown（8am–12:15，含敬茶）',o:['tiff','mo','mum'],w:'化妝師及酒店確認後'},
+  {id:32,g:'hk',sub:1,t:'↳ 與媽媽確認敬茶順序',o:['tiff','mum']},
+  {id:33,g:'hk',sub:1,t:'↳ 確認敬茶用茶杯及需要說的話',o:['tiff','mum']},
+  {id:34,g:'hk',sub:1,t:'↳ 確認長輩回禮安排',o:['tiff','mum']},
+  {id:35,g:'hk',sub:1,t:'↳ 確認 Mo 家人敬茶順序（如出席）',o:['tiff','mo']},
+  {id:36,g:'hk',t:'與媽媽確認並定稿座位表',o:['tiff','mum']},
+  {id:37,g:'hk',t:'與 Mo 完成並確認誓詞（並告知 Jon 內容長度）',o:['tiff','mo'],w:'5月底 – 6月4日'},
+  {id:38,g:'hk',t:'如需自購花卉：踩點花店',o:['tiff'],w:'6月1日前後'},
+  {id:40,g:'final',t:'核心團隊分工簡報（書面通知各人職責）',o:['tiff'],w:'1 June'},
+  {id:41,g:'final',t:'開始每天穿婚鞋在家走動磨合',o:['tiff'],w:'1 June 起'},
+  {id:42,g:'final',t:'準備婚禮當天緊急小包',o:['tiff'],w:'1 June 起'},
+  {id:43,g:'final',t:'如需自購花卉：購買',o:['tiff'],w:'5 June'},
+  {id:44,g:'final',t:'將早上 rundown 發給所有相關人士',o:['tiff'],w:'5 June'},
+  {id:45,g:'final',t:'確認婚戒由 Mo 保管',o:['tiff','mo']},
+  {id:46,g:'final',t:'與酒店最終確認菜式及特殊飲食需求',o:['tiff','hotel'],w:'視酒店要求'},
+  {id:47,g:'final',t:'提交最終賓客人數給酒店',o:['tiff','hotel'],w:'視酒店要求'},
+  {id:48,g:'final',t:'婚禮前一天取花束',o:['tiff'],w:'6 June'},
+  {id:49,g:'final',t:'準備行李箱（備用衣物、個人物品）',o:['tiff'],w:'6 June'},
+  {id:50,g:'final',t:'準備利是給 Hannah 及 Wing',o:['tiff'],w:'6 June'},
+  {id:51,g:'day',t:'早起吃早餐',o:['tiff','mo']},
+  {id:52,g:'day',t:'化妝師 Ling 到達（7:30），確認當天造型流程',o:['tiff','makeup'],w:'7:30am'},
+  {id:53,g:'day',t:'聯絡 Hannah 及 Wing 確認到場時間',o:['tiff'],w:'早上'},
+  {id:54,g:'day',t:'敬茶環節（三輪，10:15–11:00）',o:['tiff','mo','mum','family']},
+  {id:55,g:'day',t:'換西式婚紗，化妝師調整造型',o:['tiff','makeup'],w:'11:00'},
+  {id:56,g:'day',t:'Tiff 及 Mo 就緒，移至場外等候入場',o:['tiff','mo'],w:'12:15'},
+  {id:57,g:'day',t:'婚宴（12:30–15:00）→ 見婚禮 Rundown',o:['tiff','mo']},
+  {id:58,g:'day',t:'婚宴結束後收拾禮物及個人物品',o:['tiff','mo','mum','family'],w:'15:00 後'},
+];
+['hk','final','day'].forEach(g=>{
+  const el=document.getElementById('cl-'+g);
+  CL.filter(t=>t.g===g).forEach(t=>el.appendChild(mkTask(t,'cl')));
+});
+
+const typeColor={wedding:'#8B4A3F',health:'#2A6644',social:'#7A4A10',personal:'#4A3A8A'};
+const typeBg={wedding:'#FDF9F4',health:'#F0FAF5',social:'#FFF8F0',personal:'#F8F8FF'};
+const PERSONAL=[
+  {id:1,date:'14–16 May',t:'收集 baby photo（Tiff & Mo）',type:'wedding',w:'倫敦'},
+  {id:2,date:'17 May',t:'家庭 video call：婚禮事項',type:'wedding',w:'倫敦'},
+  {id:3,date:'18 May',t:'收拾行李（記得帶 Eid 服裝）',type:'personal',w:'倫敦'},
+  {id:4,date:'19 May',t:'抵達香港',type:'personal'},
+  {id:5,date:'21 May',t:'在家試穿婚紗，確認身形',type:'wedding',w:'早上'},
+  {id:6,date:'21 May',t:'取身份證',type:'personal',w:'下午 2pm'},
+  {id:7,date:'21 May',t:'剪髮',type:'personal',w:'5:30pm（已預約）'},
+  {id:8,date:'21 May',t:'與 Hannah 晚餐（通知接待廳職責）',type:'social',w:'晚上'},
+  {id:90,date:'現在起每天',t:'每天步行 30–45 分鐘',type:'health',w:'沖繩走路觀光都算'},
+  {id:91,date:'現在起每天',t:'黑豆薏米水每天喝',type:'health'},
+  {id:92,date:'現在起每天',t:'低鈉飲食——戒高鈉醬料、夜宵',type:'health'},
+  {id:93,date:'現在起每天',t:'睡前泡腳 10 分鐘',type:'health'},
+  {id:9,date:'22–27 May',t:'沖繩度假',type:'personal'},
+  {id:10,date:'22–27 May',t:'與 Mo 完成誓詞初稿',type:'wedding',w:'沖繩期間'},
+  {id:11,date:'22–27 May',t:'與 Mo 確認歌曲清單初稿',type:'wedding',w:'沖繩期間'},
+  {id:12,date:'22–27 May',t:'與 Jon 討論 MC 流程大綱',type:'wedding',w:'沖繩期間'},
+  {id:13,date:'22–27 May',t:'通知 Tahmed 拍攝職責',type:'wedding',w:'沖繩期間'},
+  {id:14,date:'28 May',t:'化妝試妝（確認造型時序）',type:'wedding',w:'1pm（已預約）'},
+  {id:15,date:'29 May',t:'與 Hannah 晚餐（待確認）',type:'social',w:'晚上'},
+  {id:16,date:'29 May',t:'取旗袍 / 中式婚服',type:'wedding',w:'或 1 June'},
+  {id:17,date:'30 May',t:'陪媽媽裙裝試身',type:'social',w:'下午 1pm'},
+  {id:95,date:'~30 May',t:'月經預計來臨——體重可能暫升 0.5–1kg，屬正常',type:'health',w:'預計 Day 1'},
+  {id:18,date:'30–31 May',t:'與 Irene、River 及朋友晚餐（待確認）',type:'social',w:'晚上'},
+  {id:19,date:'31 May',t:'歌曲清單提交酒店（deadline）',type:'wedding',w:'⚠️ Deadline'},
+  {id:96,date:'~30 May – 5 June',t:'月經期間：繼續低鈉飲食，多喝溫水',type:'health'},
+  {id:20,date:'1–4 June',t:'酒店 rundown 確認會議',type:'wedding',w:'待確認日期'},
+  {id:21,date:'1 June',t:'開始每天穿婚鞋磨合',type:'wedding',w:'1 June 起'},
+  {id:22,date:'1 June',t:'準備緊急小包',type:'wedding',w:'1 June 起'},
+  {id:94,date:'1 June 起',t:'早上冰毛巾敷臉 1–2 分鐘',type:'health',w:'每天早上'},
+  {id:97,date:'1 June 起',t:'淋巴按摩：下巴 → 耳後 → 鎖骨，早晚各 2 分鐘',type:'health',w:'每天早晚'},
+  {id:23,date:'2–4 June',t:'與 Jon 確認 MC rundown',type:'wedding'},
+  {id:24,date:'2–4 June',t:'與 Mo 完成並確認誓詞',type:'wedding'},
+  {id:25,date:'2–4 June',t:'與媽媽確認敬茶細節',type:'wedding'},
+  {id:98,date:'~5–7 June',t:'月經後水腫回落，臉部線條最清晰',type:'health',w:'婚禮前最佳狀態'},
+  {id:26,date:'5 June',t:'如需花卉：購買',type:'wedding'},
+  {id:27,date:'5 June',t:'發出早上 rundown 給所有相關人士',type:'wedding'},
+  {id:28,date:'6 June',t:'Mo 家人中午抵港',type:'personal',w:'中午'},
+  {id:29,date:'6 June',t:'取花束',type:'wedding',w:'婚禮前一天'},
+  {id:100,date:'6 June',t:'整理婚禮行李箱',type:'wedding'},
+  {id:101,date:'6 June',t:'準備利是給 Hannah 及 Wing',type:'wedding'},
+  {id:102,date:'6 June',t:'早睡，準備婚禮',type:'personal',w:'晚上'},
+  {id:30,date:'7 June',t:'婚禮當天 → 見當天分工表',type:'wedding',w:'7:30am–15:00'},
+  {id:31,date:'8–12 June',t:'與 Mo 家人遊香港',type:'social'},
+  {id:32,date:'w/c 15 June',t:'Body check（預約）',type:'health'},
+  {id:33,date:'w/c 15 June',t:'洗牙（預約）',type:'health'},
+  {id:34,date:'w/c 15 June',t:'血液荷爾蒙測試（待確認）',type:'health',w:'視其他預約而定'},
+  {id:35,date:'19 June',t:'回倫敦',type:'personal'},
+];
+let lastDate='';
+const pList=document.getElementById('personal-list');
+PERSONAL.forEach(t=>{
+  if(t.date!==lastDate){
+    const h=document.createElement('div');
+    h.style.cssText='font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--rose);margin:1.75rem 0 0.75rem;display:flex;align-items:center;gap:0.5rem';
+    h.innerHTML=`${t.date}<span style="flex:1;height:1px;background:var(--border);display:block"></span>`;
+    pList.appendChild(h);
+    lastDate=t.date;
+  }
+  const id='personal_'+t.id;
+  const done=!!C[id];
+  const d=document.createElement('div');
+  d.className='task-item'+(done?' done':'');
+  d.style.background=typeBg[t.type];
+  d.style.marginBottom='3px';
+  d.innerHTML=`<div class="chk${done?' on':''}"></div><div class="ti-body"><div class="ti-text" style="color:${typeColor[t.type]}">${t.t}</div>${t.w?`<div class="ti-when">${t.w}</div>`:''}</div>`;
+  d.addEventListener('click',()=>{C[id]=!C[id];save();d.classList.toggle('done');d.querySelector('.chk').classList.toggle('on');});
+  pList.appendChild(d);
+});
+
+const MOHK=[
+  {date:'6 June 六',title:'抵港日',items:[
+    {time:'~12:00',t:'抵達香港（經上海轉機）',tag:'travel'},
+    {time:'下午',t:'酒店入住：Harbour Plaza North Point',tag:'hotel',note:"665 King's Road, North Point"},
+    {time:'傍晚',t:'維多利亞港散步'},
+    {time:'晚上',t:'婚禮前夕晚餐',tag:'halal'},
+  ]},
+  {date:'7 June 日',title:'婚禮日',items:[
+    {time:'早上',t:'酒店早餐，前往婚禮場地',note:'The Mira Hong Kong, 18/F, 118-130 Nathan Rd, Tsim Sha Tsui'},
+    {time:'12:30',t:'Tiff & Mo 婚宴',tag:'halal',note:'Halal Buffet 於第一主桌旁'},
+    {time:'晚上',t:'廟街夜市（Temple Street Night Market）'},
+  ]},
+  {date:'8 June 一',title:'香港島',items:[
+    {time:'早上',t:'酒店早餐'},
+    {time:'午餐',t:'Wai Kee（Halal）',tag:'halal',note:'1/F, Bowrington Road Cooked Food Centre, 21 Bowrington Road, Wan Chai｜+852 2574 1131'},
+    {time:'下午',t:'銅鑼灣 → 灣仔 → 電車到中環'},
+    {time:'下午',t:'太平山頂（The Peak）+ 山頂纜車'},
+  ]},
+  {date:'9 June 二',title:'南丫島 + 新界',items:[
+    {time:'早上',t:'中環碼頭乘船往南丫島'},
+    {time:'午餐',t:'南丫彩虹海鮮酒家',tag:'halal',note:'23-27 Sok Kwu Wan First Street, Lamma Island｜+852 2982 8100'},
+    {time:'下午',t:'新界單車（待確認路線）'},
+  ]},
+  {date:'10 June 三',title:'香港迪士尼樂園',items:[
+    {time:'全天',t:'香港迪士尼樂園',note:'建議早去，熱門設施需排隊'},
+    {time:'午餐',t:'園內 Halal 餐廳',tag:'halal'},
+  ]},
+  {date:'11 June 四',title:'長洲島',items:[
+    {time:'早上',t:'伊斯蘭中心餐廳點心（限 3pm 前）',tag:'halal',note:'5/F, Masjid Ammar, 40 Oi Kwan Road, Wan Chai｜+852 2834 8211'},
+    {time:'早上',t:'中環碼頭乘渡輪往長洲'},
+    {time:'下午',t:'長洲島：海灘、行山、單車'},
+  ]},
+  {date:'12 June 五',title:'九龍：尖沙咀 + 旺角',items:[
+    {time:'午餐',t:'Islam Food（旺角）或 Rue Du Liban（尖沙咀）',tag:'halal',note:"Islam Food: 33-35 Tak Ku Ling Road, Kowloon City｜+852 2382 1882<br>Rue Du Liban: 22-26 Hillwood Road, TST｜+852 2310 2922"},
+    {time:'下午',t:'Chrisly Cafe — Halal 認證香港懷舊糕點',tag:'halal',note:'8 Minden Avenue, TST｜+852 2804 6666'},
+    {time:'下午',t:'星光大道 → 渡輪回香港島'},
+    {time:'晚上',t:'最後晚餐，告別香港',tag:'halal'},
+  ]},
+  {date:'13 June 六',title:'離港日',items:[
+    {time:'早上',t:'酒店早餐，退房'},
+    {time:'下午',t:'前往機場，HKG → LHR（經上海）',tag:'travel'},
+  ]},
+];
+const moEl=document.getElementById('mofamily-itin');
+MOHK.forEach(day=>{
+  const card=document.createElement('div');
+  card.className='itin-day';
+  card.innerHTML=`<div class="itin-day-header"><div class="itin-date">${day.date}</div><div class="itin-title">${day.title}</div></div>`;
+  const items=document.createElement('div');
+  items.className='itin-items';
+  day.items.forEach(item=>{
+    const row=document.createElement('div');
+    row.className='itin-item';
+    const tag=item.tag==='travel'?'<span class="travel-tag">交通</span>':item.tag==='hotel'?'<span class="hotel-tag">住宿</span>':item.tag==='halal'?'<span class="halal-tag">Halal ✓</span>':'';
+    row.innerHTML=`<div class="itin-time">${item.time}</div><div class="itin-detail"><span>${item.t}</span>${tag}${item.note?`<div class="itin-note">${item.note}</div>`:''}</div>`;
+    items.appendChild(row);
+  });
+  card.appendChild(items);
+  moEl.appendChild(card);
+});
+</script>
+</body>
+</html>
